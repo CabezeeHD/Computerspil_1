@@ -1,3 +1,5 @@
+import java.util.Objects;
+
 /**
  * @author Victor Isachsen
  * @author Mads Munk
@@ -60,7 +62,8 @@ public class Position {
 
     /**
      * Metode til at bevæge spilleren med.
-     * @return  Returnere om spilleren har bevæget sig.
+     *
+     * @return Returnere om spilleren har bevæget sig.
      */
     public boolean move() {
         if (distance > 0) {
@@ -71,12 +74,13 @@ public class Position {
     }
 
     public void turnAround() {
-        
+
     }
 
     /**
      * Metode der checker om spilleren har nået byen.
-     * @return  Returnere true hvis distancen er lig 0.
+     *
+     * @return Returnere true hvis distancen er lig 0.
      */
     public boolean hasArrived() {
         return distance == 0;
@@ -84,12 +88,40 @@ public class Position {
 
     /**
      * Laver en tekststreng ud fra tekster og andre primitive typer.
-     * @return  Returnere en tekststreng på den korrekte form.
+     *
+     * @return Returnere en tekststreng på den korrekte form.
      */
     public String toString() {
         return from + " -> " + to + " : " + distance + "/" + total;
     }
 
+    /**
+     * Metoder der sammenligner to objekter kun på deres start by.
+     *
+     * @param otherObject objekt der sammenlignes med
+     * @return Returnere ligheden mellem start by.
+     */
+    @Override
+    public boolean equals(Object otherObject) {
+        if (this == otherObject) {
+            return true;
+        }
+        if (otherObject == null) {
+            return false;
+        }
+        if (getClass() != otherObject.getClass()) {
+            return false;
+        }
+        Position other = (Position) otherObject;
+        return from.equals(other.from);
+    }
 
-    
+    /**
+     * Metode til at hashe med så man undgår for mange kollisioner.
+     * @return Returnere haskoden.
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(from, to, distance, total);
+    }
 }
