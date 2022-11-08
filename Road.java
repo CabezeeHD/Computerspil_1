@@ -1,3 +1,8 @@
+/**
+ * @author Mads Munk
+ * @author Victor Isachsen
+ */
+
 public class Road implements Comparable<Road>{
     private City from;
     private City to;
@@ -8,7 +13,20 @@ public class Road implements Comparable<Road>{
         this.to = to;
         this.length = length;
     }
-@Override
+
+    public City getFrom() {
+        return from;
+    }
+
+    public City getTo() {
+        return to;
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    @Override
     public String toString() {
         return from + " -> " + to + " : " + length;
     }
