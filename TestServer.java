@@ -13,14 +13,15 @@ import java.time.format.DateTimeFormatter;
  * This class is used to communicate with the test server.
  *
  * Errors should be reported via the webboard.
- * Critical errors may also be reported by mail to nis@cs.au.dk
  * Describe the problem as detailed and precise as possible.
  * If we cannot reproduce it, we cannot fix it.
  *
  * @author  Nikolaj I. Schwartzbach & Asger Phillip Andersen
- * @version 2021-10-10
+ * @version 2022-09-01
  */
 public class TestServer {
+    private static String srcDir = "";
+
     private TestServer() {}
 
     /**
@@ -30,18 +31,18 @@ public class TestServer {
     public static void updateTestServer() {
         if(updateAvailable()) {
             try (ReadableByteChannel rbc = Channels.newChannel(new URL("https://adamkjelstroem.github.io/IntProg-undervisningsmateriale/web/e22/opgaver/TestServer.java").openStream());
-                 FileOutputStream fos = new FileOutputStream("TestServer.java")) {
+            FileOutputStream fos = new FileOutputStream(srcDir + "TestServer.java")) {
                 fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-                System.out.println("TestServeren er blevet opdateret :)");
+                JOptionPane.showMessageDialog(null, "Testserver filen er blevet opdateret. Genstart venligst BlueJ", "TestServer Opdatering", JOptionPane.INFORMATION_MESSAGE);
             } catch (FileNotFoundException e) {
-                System.out.println("Kan ikke overskrive den lokale fil.\nKontakt en adm. instruktor tak :)");
+                System.err.println("Kan ikke overskrive den lokale fil.\nKontakt en adm. instruktor tak :)");
             } catch(MalformedURLException e) {
-                System.out.println("Forkert URL...\nKontakt en adm. instruktor tak :)");
+                System.err.println("Forkert URL...\nKontakt en adm. instruktor tak :)");
             } catch (IOException e) {
-                System.out.println("FileOutputStream fejlede...\nKontakt en adm. instruktor tak :)");
+                System.err.println("FileOutputStream fejlede...\nKontakt en adm. instruktor tak :)");
             }
         } else {
-            System.out.println("Du har allerede den nyeste version af TestServeren");
+            JOptionPane.showMessageDialog(null, "Du har allerede den nyeste version af TestServer filen", "TestServer Opdatering", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
@@ -63,20 +64,21 @@ public class TestServer {
      * @return true when there is an update available, otherwise false.
      */
     private static boolean updateAvailable() {
+        setSrcDir();
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuu-MM-dd");
 
-        try(InputStream local = new FileInputStream(new File("TestServer.java"));
-            InputStream online = (new URL("https://adamkjelstroem.github.io/IntProg-undervisningsmateriale/web/e21/opgaver/TestServer.java")).openStream()) {
+        try(InputStream local = new FileInputStream(new File(srcDir + "TestServer.java"));
+        InputStream online = (new URL("https://adamkjelstroem.github.io/IntProg-undervisningsmateriale/web/e22/opgaver/TestServer.java")).openStream()) {
             LocalDate localDate = LocalDate.parse(parseVersionDate(local), dtf);
             LocalDate onlineDate = LocalDate.parse(parseVersionDate(online), dtf);
 
             return localDate.isBefore(onlineDate);
         } catch(MalformedURLException e) {
-            System.out.println("Forkert URL...\nKontakt en adm. instruktor tak :)");
+            System.err.println("Forkert URL...\nKontakt en adm. instruktor");
         } catch(FileNotFoundException e) {
-            System.out.println("Kan finde lokale fil.\nKontakt en adm. instruktor tak :)");
+            System.err.println("Kan ikke finde lokale fil.\nKontakt en adm. instruktor");
         } catch(IOException e) {
-            System.out.println("Kan ikke læse den lokale fil.\nKontakt en adm. instruktor tak :)");
+            System.err.println("Kan ikke læse den lokale fil.\nKontakt en adm. instruktor");
         }
 
         return false;
@@ -92,7 +94,7 @@ public class TestServer {
         String date = "";
         while(s.hasNextLine()) {
             String line = s.nextLine();
-            if(line.length() > 11 && line.substring(3, 11).equals("@version")) {
+            if(line.length() > 21 && line.substring(3, 11).equals("@version")) {
                 date = line.substring(12, 22);
                 break;
             }
@@ -109,8 +111,12 @@ public class TestServer {
      */
     public static void download(String exercise) throws IOException {
         if(updateAvailable()) {
-            updateTestServer();
-            System.out.println("Du havde ikke den nyeste version af testserveren, men den er blevet opdateret nu.\nPrøv igen, og genstart eventuelt BlueJ.");
+            int optionChosen = JOptionPane.showOptionDialog(null, "Der er en ny version af TestServer filen, vil du opdatere nu?\n(Dette er påkrævet for at kunne downloade nye filer)", "Opdater TestServer fil?", 
+                    JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, null, null);
+            if (optionChosen == JOptionPane.YES_NO_OPTION) {
+                updateTestServer();
+            }
+
             return;
         }
 
@@ -120,15 +126,15 @@ public class TestServer {
 
             case "cg1":
                 downloadCourseFiles("cg1","Game.java","GUI.java",
-                        "Settings.java","Player.java","GUIPlayer.java","RandomPlayer.java",
-                        "GreedyPlayer.java","SmartPlayer.java","CGTest.java",
-                        "network.dat","map.png","greedyplayer.png","randomplayer.png",
-                        "smartplayer.png","guiplayer.png");
+                    "Settings.java","Player.java","GUIPlayer.java","RandomPlayer.java",
+                    "GreedyPlayer.java","SmartPlayer.java","CGTest.java",
+                    "network.dat","map.png","greedyplayer.png","randomplayer.png",
+                    "smartplayer.png","guiplayer.png");
                 break;
             case "cg3":
                 downloadCourseFiles("cg3","Game.java","GUI.java",
-                        "Player.java","RandomPlayer.java",
-                        "GreedyPlayer.java","SmartPlayer.java");
+                    "Player.java","RandomPlayer.java",
+                    "GreedyPlayer.java","SmartPlayer.java");
                 break;
             case "cg5":
                 downloadCourseFiles("cg5","LogPlayer.java","Game.java","Settings.java");
@@ -141,11 +147,6 @@ public class TestServer {
      * @param exercise   Short name of exercise.
      */
     public static void testAndOpenInBrowser(String exercise) throws IOException, URISyntaxException {
-        if(updateAvailable()) {
-            updateTestServer();
-            System.out.println("Du havde ikke den nyeste version af testserveren, men den er blevet opdateret nu.\nPrøv igen, og genstart eventuelt BlueJ.");            return;
-        }
-
         String str = test(exercise);
         if(str.contains("Link: ")){
             str = str.substring(str.indexOf("Link: ")+6);
@@ -158,9 +159,20 @@ public class TestServer {
      * @param exercise   Short name of exercise.
      */
     public static String test(String exercise) throws IOException {
+        if (!isAlive()) {
+            JOptionPane.showMessageDialog(null, "Testserveren er desværre nede. Prøv igen senere, og skriv eventuelt på diskussionsforummet, hvis der ikke allerede er gjort det.", "TestServer nede", JOptionPane.ERROR_MESSAGE);
+            
+            return "";
+        }
+        
         if(updateAvailable()) {
-            updateTestServer();
-            System.out.println("Du havde ikke den nyeste version af testserveren, men den er blevet opdateret nu.\nPrøv igen, og genstart eventuelt BlueJ.");            return "";
+            int optionChosen = JOptionPane.showOptionDialog(null, "Der er en ny version af TestServer filen, vil du opdatere nu?\n(Dette er påkrævet for at kunne teste opgaver)", "Opdater TestServer fil?", 
+                    JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, null, null);
+            if (optionChosen == JOptionPane.YES_NO_OPTION) {
+                updateTestServer();
+            }
+
+            return "";
         }
 
         String ex = exercise.toLowerCase();
@@ -168,7 +180,7 @@ public class TestServer {
         String[] files = null;
         switch(ex) {
 
-            // DieCup
+                // DieCup
             case "dc1":
                 files = new String[] {"Die","DieCup"}; break;
             case "dc2":
@@ -181,139 +193,139 @@ public class TestServer {
             case "dc4-3":
                 files = new String[] {"Game"}; break;
 
-            // Turtle
+                // Turtle
             case "turtle1":
             case "turtle2":
                 files = new String[] {"Actor", "Canvas", "Turtle"}; break;
 
-            // 2016
+                // 2016
             case "basketplayer":
-                files = new String[] {"BasketPlayer","BasketTeam"}; break;
+                files = new String[] {"BasketPlayer","BasketTeam", "TestDriver"}; break;
             case "cow":
-                files = new String[] {"Cow","DiaryFarm"}; break;
+                files = new String[] {"Cow","DiaryFarm", "TestDriver"}; break;
             case "field-1":
             case "field-2":
-                files = new String[] {"Field","Farm"}; break;
+                files = new String[] {"Field","Farm", "TestDriver"}; break;
             case "goat":
-                files = new String[] {"Goat","GoatFarm"}; break;
+                files = new String[] {"Goat","GoatFarm", "TestDriver"}; break;
             case "handballplayer":
-                files = new String[] {"HandballPlayer","HandballTeam"}; break;
+                files = new String[] {"HandballPlayer","HandballTeam", "TestDriver"}; break;
             case "image":
-                files = new String[] {"Image","UsbStick"}; break;
+                files = new String[] {"Image","UsbStick", "TestDriver"}; break;
             case "soccerplayer":
-                files = new String[] {"SoccerPlayer","SoccerTeam"}; break;
+                files = new String[] {"SoccerPlayer","SoccerTeam", "TestDriver"}; break;
             case "volleyplayer":
-                files = new String[] {"VolleyPlayer","VolleyTeam"}; break;
+                files = new String[] {"VolleyPlayer","VolleyTeam", "TestDriver"}; break;
             case "passenger":
-                files = new String[] {"Passenger","Ferry"}; break;
+                files = new String[] {"Passenger","Ferry", "TestDriver"}; break;
             case "picture":
-                files = new String[] {"Picture","UsbStick"}; break;
+                files = new String[] {"Picture","UsbStick", "TestDriver"}; break;
             case "song":
-                files = new String[] {"Song","DVD"}; break;
+                files = new String[] {"Song","DVD", "TestDriver"}; break;
 
-            // 2017
+                // 2017
             case "animal":
-                files = new String[] {"Animal","Zoo"}; break;
+                files = new String[] {"Animal","Zoo", "TestDriver"}; break;
             case "brick-1":
             case "brick-2":
-                files = new String[] {"Brick","LegoBox"}; break;
+                files = new String[] {"Brick","LegoBox", "TestDriver"}; break;
             case "carpet-1":
             case "carpet-2":
-                files = new String[] {"Carpet","Shop"}; break;
+                files = new String[] {"Carpet","Shop", "TestDriver"}; break;
             case "tool-1":
             case "tool-2":
-                files = new String[] {"Tool","ToolBox"}; break;
+                files = new String[] {"Tool","ToolBox", "TestDriver"}; break;
             case "vegetable-1":
             case "vegetable-2":
-                files = new String[] {"Vegetable","Shop"}; break;
+                files = new String[] {"Vegetable","Shop", "TestDriver"}; break;
             case "nail":
-                files = new String[] {"Nail","Box"}; break;
+                files = new String[] {"Nail","Box", "TestDriver"}; break;
             case "screw":
-                files = new String[] {"Screw","Box"}; break;
+                files = new String[] {"Screw","Box", "TestDriver"}; break;
             case "chicken":
-                files = new String[] {"Chicken","ChickenYard"}; break;
+                files = new String[] {"Chicken","ChickenYard", "TestDriver"}; break;
             case "pigeon":
-                files = new String[] {"Pigeon","PigeonLoft"}; break;
+                files = new String[] {"Pigeon","PigeonLoft", "TestDriver"}; break;
             case "penguin":
-                files = new String[] {"Penguin","Group"}; break;
+                files = new String[] {"Penguin","Group", "TestDriver"}; break;
 
-            // 2018
+                // 2018
             case "ferry":
-                files = new String[] {"Ferry","Harbour"}; break;
+                files = new String[] {"Ferry","Harbour", "TestDriver"}; break;
             case "train-1":
             case "train-2":
-                files = new String[] {"Train","TrainStation"}; break;
+                files = new String[] {"Train","TrainStation", "TestDriver"}; break;
             case "bus-1":
             case "bus-2":
-                files = new String[] {"Bus","BusStation"}; break;
+                files = new String[] {"Bus","BusStation", "TestDriver"}; break;
             case "flight":
-                files = new String[] {"Flight","Airport"}; break;
+                files = new String[] {"Flight","Airport", "TestDriver"}; break;
 
-            // 2019
+                // 2019
             case "chapter":
-                files = new String[]{ "Chapter", "Book" }; break;
+                files = new String[]{ "Chapter", "Book", "TestDriver" }; break;
             case "cheese":
-                files = new String[]{ "Cheese", "Cooler" }; break;
+                files = new String[]{ "Cheese", "Cooler", "TestDriver" }; break;
             case "drink":
-                files = new String[]{ "Drink", "Refrigerator" }; break;
+                files = new String[]{ "Drink", "Refrigerator", "TestDriver" }; break;
             case "flower":
-                files = new String[]{ "Flower", "Bouquet" }; break;
+                files = new String[]{ "Flower", "Bouquet", "TestDriver" }; break;
             case "food":
-                files = new String[]{ "Food", "DeepFreezer" }; break;
+                files = new String[]{ "Food", "DeepFreezer", "TestDriver" }; break;
             case "fruit":
-                files = new String[]{ "Fruit", "Basket" }; break;
+                files = new String[]{ "Fruit", "Basket", "TestDriver" }; break;
             case "pearl":
-                files = new String[]{ "Pearl", "Necklace" }; break;
+                files = new String[]{ "Pearl", "Necklace", "TestDriver" }; break;
             case "photo":
-                files = new String[]{ "Photo", "Album" }; break;
+                files = new String[]{ "Photo", "Album", "TestDriver" }; break;
 
-            // 2020
+                // 2020
             case "cat":
-                files = new String[]{ "Cat", "Family" }; break;
+                files = new String[]{ "Cat", "Family", "TestDriver" }; break;
             case "dog":
-                files = new String[]{ "Dog", "Kennel" }; break;
+                files = new String[]{ "Dog", "Kennel", "TestDriver" }; break;
             case "elephant":
-                files = new String[]{ "Elephant", "Zoo" }; break;
+                files = new String[]{ "Elephant", "Zoo", "TestDriver" }; break;
             case "fox":
-                files = new String[]{ "Fox", "Island" }; break;
+                files = new String[]{ "Fox", "Island", "TestDriver" }; break;
             case "horse":
-                files = new String[]{ "Horse", "Farm" }; break;
+                files = new String[]{ "Horse", "Farm", "TestDriver" }; break;
             case "lion":
-                files = new String[]{ "Lion", "Savannah" }; break;
+                files = new String[]{ "Lion", "Savannah", "TestDriver" }; break;
             case "pet":
-                files = new String[]{ "Pet", "Child" }; break;
+                files = new String[]{ "Pet", "Child", "TestDriver" }; break;
             case "rabbit":
-                files = new String[]{ "Rabbit", "Boy" }; break;
+                files = new String[]{ "Rabbit", "Boy", "TestDriver" }; break;
             case "mouse":
-                files = new String[]{ "Mouse", "Girl" }; break;
+                files = new String[]{ "Mouse", "Girl", "TestDriver" }; break;
             case "pig":
-                files = new String[]{ "Pig", "Island" }; break;
+                files = new String[]{ "Pig", "Island", "TestDriver" }; break;
             case "sheep":
-                files = new String[]{ "Sheep", "Farm" }; break;
+                files = new String[]{ "Sheep", "Farm", "TestDriver" }; break;
             case "tiger":
-                files = new String[]{ "Tiger", "Forest" }; break;
+                files = new String[]{ "Tiger", "Forest", "TestDriver" }; break;
 
-            // Videos
+                // Videos
             case "phone":
-                files = new String[] {"Phone","WebShop"}; break;
+                files = new String[] {"Phone","WebShop", "TestDriver"}; break;
             case "pirate":
-                files = new String[] {"Pirate","PirateShip"}; break;
+                files = new String[] {"Pirate","PirateShip", "TestDriver"}; break;
             case "car":
-                files = new String[] {"Car","Store"}; break;
+                files = new String[] {"Car","Store", "TestDriver"}; break;
             case "turtle":
-                files = new String[] {"Turtle","Zoo"}; break;
+                files = new String[] {"Turtle","Zoo", "TestDriver"}; break;
 
-            // Handins
+                // Handins
             case "musician":
-                files = new String[] {"Musician", "Band"}; break;
+                files = new String[] {"Musician", "Band", "TestDriver"}; break;
             case "racer":
-                files = new String[] {"Racer", "FormulaOne"}; break;
+                files = new String[] {"Racer", "FormulaOne", "TestDriver"}; break;
             case "boat":
-                files = new String[] {"Boat", "Marina"}; break;
+                files = new String[] {"Boat", "Marina", "TestDriver"}; break;
             case "biker":
-                files = new String[] {"Biker", "MotorcycleClub"}; break;
+                files = new String[] {"Biker", "MotorcycleClub", "TestDriver"}; break;
             case "film":
-                files = new String[] {"Film", "FilmCollection"}; break;
+                files = new String[] {"Film", "FilmCollection", "TestDriver"}; break;
 
             case "cg1-1":
                 files = new String[] {"City"}; break;
@@ -385,14 +397,16 @@ public class TestServer {
             Scanner s = new Scanner(System.in);
 
             System.out.print("Første gang du uploader et projekt til testserveren skal du indtaste dit auID og en adgangskode.\n" +
-                    "Begge dele huskes i din projektmappe, således at du ikke behøver at indtaste dem ved senere uploads af projektet.\n\n" +
-                    "Du kan skaffe dig en adgangskode via linket: https://dintprog.cs.au.dk/reset.php\n\n" +
-                    "Det er samme adgangskode, der anvendes til quizserveren og til testserveren.\n\n" +
-                    "Indtast auID: \n> ");
+                "Begge dele huskes i din projektmappe, således at du ikke behøver at indtaste dem ved senere uploads af projektet.\n\n" +
+                "Du kan skaffe dig en adgangskode via linket: https://dintprog.cs.au.dk/reset.php\n\n" +
+                "Det er samme adgangskode, der anvendes til quizserveren og til testserveren.\n\n" +
+                "Indtast auID: \n> ");
 
             auID = s.nextLine();
             System.out.print("\nIndtast adgangskode: \n> ");
             code = s.nextLine();
+
+            s.close();
 
             // Save information for next time
             PrintWriter pw = new PrintWriter("upload-data.dat");
@@ -401,21 +415,28 @@ public class TestServer {
         }
 
         // Set meta information
-        arguments.put("h",ex.replace("dc3-1","dc3a").replace("dc3-4","dc3b").replace("dc4-1","dc4a").replace("dc4-2","dc4b").replace("dc4-2","dc4c"));
-        arguments.put("auID",auID);
+        arguments.put("h",ex.replace("dc3-1","dc3a").replace("dc3-4","dc3b").replace("dc4-1","dc4a").replace("dc4-2","dc4b").replace("dc4-3","dc4c"));
+        arguments.put("auID",auID.toLowerCase());
         arguments.put("code",code);
 
         // Check all files and accumulate contents
         for(String file : files) {
-            Path p = Paths.get(file+".java");
+            if(file.equals("TestDriver") && !Files.exists(Paths.get(srcDir + "TestDriver.java"))) {
+                file = "Driver";
+            }
+
+            Path p = Paths.get(srcDir + file+".java");
+            //handling for IntelliJ setup (aka file is stored in "<user.dir>/src")
+            if (!Files.exists(p)) p = Paths.get("src", file + ".java");
+
             // Check if file exists
             if(Files.exists(p)) {
                 String str = new String(Files.readAllBytes(p), Charset.defaultCharset());
-                arguments.put(file.toLowerCase(), str);
-            }
-            else {
-                System.err.println("No file with this name '" + file + ".java' in folder " + System.getProperty("user.dir")  +".");
-                return "No file with this name '" + file + ".java' in folder " + System.getProperty("user.dir")  +".";
+                arguments.put(file.equals("Driver") ? "testdriver" : file.toLowerCase(), str);
+            } else {
+                String errMsg = "No file with this name '" + p.toRealPath().toString() + "'.";
+                System.err.println(errMsg);
+                return errMsg;
             }
         }
 
@@ -443,7 +464,7 @@ public class TestServer {
     private static void downloadCourseFiles(String version, String... files)  {
         for(String file : files)
             try {
-                downloadFile("https://adamkjelstroem.github.io/IntProg-undervisningsmateriale/web/e21/opgaver/"+version+"/"+file,file);
+                downloadFile("https://adamkjelstroem.github.io/IntProg-undervisningsmateriale/web/e22/opgaver/"+version+"/"+file,file);
             } catch(IOException e){
                 System.err.println("Unable to download file: "+file+". Reason: "+e.getMessage());
             }
@@ -457,12 +478,14 @@ public class TestServer {
      * @param dest The destination of the downloaded file.
      */
     private static void downloadFile(String url, String dest) throws IOException {
+        dest = dest.endsWith(".java") ? srcDir + dest : dest;
         if(Files.exists(Paths.get(dest)))
             Files.delete(Paths.get(dest));
         URL website = new URL(url);
         ReadableByteChannel rbc = Channels.newChannel(website.openStream());
         FileOutputStream fos = new FileOutputStream(dest);
         fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+        fos.close();
     }
 
     /**
@@ -485,7 +508,7 @@ public class TestServer {
         StringJoiner sj = new StringJoiner("&");
         for(Map.Entry<String,String> entry : arguments.entrySet())
             sj.add(URLEncoder.encode(entry.getKey(), "UTF-8") + "="
-                    + URLEncoder.encode(entry.getValue(), "UTF-8"));
+                + URLEncoder.encode(entry.getValue(), "UTF-8"));
         byte[] out = sj.toString().getBytes(StandardCharsets.UTF_8);
         int length = out.length;
         http.setFixedLengthStreamingMode(length);
@@ -506,5 +529,36 @@ public class TestServer {
         }
         http.disconnect();
         return sb.toString();
+    }
+
+    private static void setSrcDir() {
+        srcDir = Files.isDirectory(Paths.get("src")) ? "src/" : "";
+    }
+
+    private static boolean isAlive() throws IOException {
+        URL obj = new URL("https://dintprog.cs.au.dk/alive.php");
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+        con.setRequestMethod("GET");
+        con.setRequestProperty("User-Agent", "Java client");
+        int responseCode = con.getResponseCode();
+        //System.out.println("GET Response Code :: " + responseCode);
+        if (responseCode == HttpURLConnection.HTTP_OK) { // success
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                        con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            String status = response.toString();
+            return "oppe".equals(response.toString());
+        }
+        else {
+            System.err.println("Serveren svarede ikke. Kontakt en adm. instruktor");
+            return false;
+        }
     }
 }

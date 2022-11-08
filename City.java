@@ -9,22 +9,43 @@ public class City implements Comparable<City>{
         this.initialValue = value;
     }
 
-    private void changeValue(int amount) {
+    public void changeValue(int amount) {
         value += amount;
     }
 
-    private void reset() {
+    public void reset() {
         value = initialValue;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public int getInitialValue() {
+        return initialValue;
+    }
+@Override
     public String toString() {
-        return name + " (" + value + ") ";
+        return name + " (" + value + ")";
     }
 
     public int compareTo(City other){
-        if(name != other.name){
             return name.compareTo(other.name);
-        }
-        return value - other.value;
+    }
+@Override
+    public boolean equals(Object otherObject) {
+        if (this == otherObject) {return true;}
+        if (otherObject == null) {return false;}
+        if (getClass() != otherObject.getClass()) {return false;}
+        City other =(City) otherObject;
+        return name.equals(other.name);
+    }
+@Override
+    public int hashCode() {
+        return 11 * name.hashCode();
     }
 }
