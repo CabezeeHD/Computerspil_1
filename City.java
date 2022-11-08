@@ -1,4 +1,4 @@
-public class City {
+public class City implements Comparable<City>{
     private String name;
     private int value;
     private int initialValue;
@@ -9,15 +9,22 @@ public class City {
         this.initialValue = value;
     }
 
-    public void changeValue(int amount) {
+    private void changeValue(int amount) {
         value += amount;
     }
 
-    public void reset() {
+    private void reset() {
         value = initialValue;
     }
 
     public String toString() {
         return name + " (" + value + ") ";
+    }
+
+    public int compareTo(City other){
+        if(name != other.name){
+            return name.compareTo(other.name);
+        }
+        return value - other.value;
     }
 }
