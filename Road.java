@@ -1,4 +1,8 @@
+import java.util.Objects;
+
 /**
+ * This class models a Road
+ * A Road is a one directional
  * @author Mads Munk
  * @author Victor Isachsen
  */
@@ -87,6 +91,8 @@ public class Road implements Comparable<Road>{
      */
     @Override
     public int hashCode() {
-        return 13 * from.hashCode();
+        //Implementeres metoden på måden vist i slides med "13 * new Integer(age).hashcode" fås fejlmeddelelse.
+        Integer i = Integer.valueOf(length);
+        return 13 * from.hashCode() + 17 * to.hashCode() + 11 * i.hashCode();
     }
 }

@@ -1,4 +1,6 @@
 /**
+ * This class models a City
+ *
  * @author Victor Isachsen
  * @author Mads Munk
  */
@@ -17,6 +19,10 @@ public class City implements Comparable<City>{
         this.name = name;
         this.value = value;
         this.initialValue = value;
+    }
+
+    public Country getCountry() {
+        return country;
     }
 
     /**
