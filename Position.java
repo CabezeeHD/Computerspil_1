@@ -74,7 +74,10 @@ public class Position {
     }
 
     public void turnAround() {
-
+        City temp = from;
+        from = to;
+        to = temp;
+        distance = total - distance;
     }
 
     /**
@@ -91,29 +94,22 @@ public class Position {
      *
      * @return Returnere en tekststreng på den korrekte form.
      */
+    @Override
     public String toString() {
         return from + " -> " + to + " : " + distance + "/" + total;
     }
 
     /**
-     * Metoder der sammenligner to objekter kun på deres start by.
-     *
-     * @param otherObject objekt der sammenlignes med
-     * @return Returnere ligheden mellem start by.
+     * Metode til at sammenligne to Position objekter med.
+     * @param o Objekt at sammenligne med.
+     * @return  Returnere sammenlignede objekter.
      */
     @Override
-    public boolean equals(Object otherObject) {
-        if (this == otherObject) {
-            return true;
-        }
-        if (otherObject == null) {
-            return false;
-        }
-        if (getClass() != otherObject.getClass()) {
-            return false;
-        }
-        Position other = (Position) otherObject;
-        return from.equals(other.from);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Position position = (Position) o;
+        return distance == position.distance && total == position.total && Objects.equals(from, position.from) && Objects.equals(to, position.to);
     }
 
     /**
