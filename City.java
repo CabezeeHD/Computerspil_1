@@ -25,6 +25,10 @@ public class City implements Comparable<City>{
         return country;
     }
 
+    public int arrive() {
+        return value - country.bonus(value);
+    }
+
     /**
      * Mutatormetode til at ændre værdien af feltvariablen.
      * @param amount    Den nye værdi man vil lægge til.
