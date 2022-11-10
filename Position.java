@@ -109,7 +109,7 @@ public class Position {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Position position = (Position) o;
-        return distance == position.distance && total == position.total && Objects.equals(from, position.from) && Objects.equals(to, position.to);
+        return distance == position.distance && total == position.total && from.equals(position.from) && to.equals(position.to);
     }
 
     /**
@@ -118,6 +118,6 @@ public class Position {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(from, to, distance, total);
+        return 31 * from.hashCode() + 7 * to.hashCode() + 13 * Integer.valueOf(total).hashCode() + 23 * Integer.valueOf(distance).hashCode();
     }
 }

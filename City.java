@@ -9,16 +9,19 @@ public class City implements Comparable<City>{
     private String name;//Felt variabel til navn af byen.
     private int value;//Felt variabel til værdien af byen.
     private int initialValue;//Felt variabel til den startende værdi.
+    private Country country;
 
     /**
      * Konstruktør til klassen som initialisere feltvariablerne.
      * @param name  Navn på byen.
      * @param value Start værdi.
      */
-    public City(String name, int value) {
+    public City(String name, int value, Country country) {
         this.name = name;
         this.value = value;
         this.initialValue = value;
+        this.country = country;
+
     }
 
     public Country getCountry() {
@@ -97,7 +100,7 @@ public class City implements Comparable<City>{
         if (otherObject == null) {return false;}
         if (getClass() != otherObject.getClass()) {return false;}
         City other =(City) otherObject;
-        return name.equals(other.name);
+        return name.equals(other.name) && country.equals(other.getCountry());
     }
 
     /**
@@ -106,6 +109,6 @@ public class City implements Comparable<City>{
      */
     @Override
     public int hashCode() {
-        return 11 * name.hashCode();
+        return 11 * name.hashCode() + 23 * country.hashCode();
     }
 }

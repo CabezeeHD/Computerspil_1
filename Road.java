@@ -82,7 +82,7 @@ public class Road implements Comparable<Road>{
         if (otherObject == null) {return false;}
         if (getClass() != otherObject.getClass()) {return false;}
         Road other =(Road) otherObject;
-        return from.equals(other.from);
+        return from.equals(other.from) && to.equals(other.to) && length == other.getLength();
     }
 
     /**

@@ -79,6 +79,25 @@ public class Country {
        }
     }
 
+    /**
+     * Method that calculates a bonus.
+     * @param value Integer value that is recieved from the method arrive() in the city class.
+     * @return      Returns a random integer int the interval [0,value]
+     */
+    public int bonus(int value) {
+        if (value > 0) {
+            random = new Random();
+            value = random.nextInt(value+1);
+            return value;
+        }
+        return 0;
+    }
+
+    /**
+     * Method to make a text string on the right form.
+     * @return  Returns a text string with the name of the country.
+     */
+    @Override
     public String toString() {
         return name;
     }
